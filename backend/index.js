@@ -2,6 +2,7 @@ import express from "express";
 
 import userRouter from "./src/routes/user.js";
 import workerRouter from "./src/routes/worker.js";
+import { authMiddleware }from './authMiddelweare.js'
 const app = express();
 
 app.use("/api/user", userRouter);
