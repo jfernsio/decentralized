@@ -22,10 +22,10 @@ cloudinary.config({
 
 // console.log(uploadResult);
 // Generate timestamp and signature
-const timestamp = Math.round(new Date().getTime() / 1000); // Current timestamp in seconds
+const timestamp = Math.floor(new Date().getTime() / 1000); // Current timestamp in seconds
 const params = {
   timestamp: timestamp,
-  folder: 'test', // Optional: Organize files into folders
+  folder: 'fiver', // Optional: Organize files into folders
 };
 
 const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET);
@@ -33,5 +33,5 @@ const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINA
 console.log('Signature:', signature);
 console.log('Timestamp:', timestamp);
 
-
+ 
     
