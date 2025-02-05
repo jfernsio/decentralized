@@ -1,6 +1,7 @@
 
 import jwt from "jsonwebtoken";
-const JWT_PASS = "1234567890";
+import dotenv from "dotenv";
+dotenv.config();
 const authMiddleware = (req, res, next) => {
     const authHeader = req.headers["authorization"];
   
@@ -9,7 +10,7 @@ const authMiddleware = (req, res, next) => {
     }
   
     try {
-      const decoded = jwt.verify(authHeader, JWT_PASS);
+      const decoded = jwt.verify(authHeader, process.env.JWT_PASS);
       // Attach the user ID to the request object
       req.userId = decoded.id;
       next();

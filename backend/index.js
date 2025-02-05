@@ -1,6 +1,7 @@
 import express from "express";
 import connectDB from './config/connectDb.js'
 import userRouter from "./src/routes/user.js";
+import userrouter from "./src/routes/userRoutes.js";
 import workerRouter from "./src/routes/worker.js";
 import { Submission } from "./models/taskModel.js";
 import { authMiddleware } from "./authMiddelweare.js";
@@ -8,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 connectDB()
-app.use("/api/user", userRouter);
+app.use("/api/user", userrouter);
 app.use("/api/worker", workerRouter);
 app.post("/submit", authMiddleware, async (req, res) => {
   try {
