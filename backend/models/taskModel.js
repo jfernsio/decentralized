@@ -56,13 +56,17 @@ const taskSchema = new Schema({
     required: true
   },
   amount: {
-    type: Number,
+    type: Number, 
     required: true
   },
   done: {
     type: Boolean,
     default: false
-  }
+  },
+  options: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Option'
+  }]
 }, { timestamps: true });
 
 // Option Schema
@@ -75,6 +79,11 @@ const optionSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Task',
     required: true
+  },
+  submissions: {
+    type: Number,
+    default: 0,
+    min: 0
   }
 }, { timestamps: true });
 
@@ -83,7 +92,7 @@ const submissionSchema = new Schema({
   worker_id: {
     type: Schema.Types.ObjectId,
     ref: 'Worker',
-    required: true
+    // required: true
   },
   option_id: {
     type: Schema.Types.ObjectId,
@@ -97,7 +106,7 @@ const submissionSchema = new Schema({
   },
   amount: {
     type: Number,
-    required: true
+    // required: true
   }
 }, { timestamps: true });
 
@@ -126,6 +135,8 @@ const payoutSchema = new Schema({
   }
 }, { timestamps: true });
 
+
+
 // Create models
 const User = mongoose.model('User', userSchema);
 const Worker = mongoose.model('Worker', workerSchema);
@@ -134,9 +145,25 @@ const Option = mongoose.model('Option', optionSchema);
 const Submission = mongoose.model('Submission', submissionSchema);
 const Payout = mongoose.model('Payout', payoutSchema);
 
+// pre-save middleware to ensure options exist
+//taskSchema.pre('save', async function(next) {
+//   try {
+//     if (this.options && this.options.length > 0) {
+//       const optionsExist = await Option.find({
+//         '_id': { $in: this.options }
+//       });
+//       if (optionsExist.length !== this.options.length) {
+//         throw new Error('Some options do not exist');
+//       }
+//     }
+//     next();
+//   } catch (error) {
+//     next(error);
+//   }
+// });
 
-export default {
-    User,
+export {
+  User,
   Worker,
   Task,
   Option,

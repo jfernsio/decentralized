@@ -1,88 +1,92 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 const userRouter = express.Router();
-import { v2 as cloudinary } from 'cloudinary';
-import { authMiddleware } from "../../authMiddelweare";
-const JWT_PASS = "1234567890";
-//signin with a wallet
-//signing a message
-const User = [
-    {
-        id:3298,
-        wallet: "0x1234567890",
-        name: "John Doe",
-        email: "john@doe.com",
-        password: "1234567890",
-  },
-  {
-    id:7238,
-    wallet: "0x1234567891",
-    name: "Jane Doe",
-    email: "jane@doe.com",
-    password: "1234567891",
-  },
-  {
-    id:2383,
-    wallet: "0x1234567892",
-    name: "John Smith",
-    email: "johnsmith@doe.com",
-    password: "1234567892",
-  },
-];
-userRouter.post("/sigin", async (req, res) => {
-  //todo add a sign verification logic
+import { v2 as cloudinary } from "cloudinary";
+import { authMiddleware } from "../../authMiddelweare.js";
 
-  const hardCodedWallet = "0x1234567890";
-  const existingUser = User.find((user) => user.wallet === hardCodedWallet);
-  console.log(existingUser)
-  if (!existingUser) {
-    const newUser = new User({ wallet: hardCodedWallet });
-    await newUser.save();
-  }
-  const token = jwt.sign({
-    id: existingUser.id,
-  }, JWT_PASS);
-  res.json({ token });
+import { Task, Option, User, Submission } from "../../models/taskModel.js";
+
+// JWT secret for token signing
+const JWT_PASS = "1234567890"; 
+
+// Configure cloudinary for image upload
+cloudinary.config({
+  cloud_name: "dy9bfgpi5",
 });
 
 
-userRouter.get('/presigned',authMiddleware,async(req,res) => {
-    const userId = req.userId
-    const timestamp = Math.round(new Date().getTime() / 1000); // Current timestamp in seconds
-const params = {
-  timestamp: timestamp,
-  folder: `fiver/${userId}/${Math.random()}/image.jpg`, // Optional: Organize files into folders
-};
 
-const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET);
+// Route to get presigned URL for cloudinary upload
+userRouter.get("/presigned", async (req, res) => {
+  const userId = req.userId;
+  // Generate timestamp for signature
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const params = {
+    timestamp: timestamp,
+    folder: `fiver`,
+  };
 
-console.log('Signature:', signature);
-console.log('Timestamp:', timestamp);
-})
+  // Generate cloudinary signature
+  const signature = cloudinary.utils.api_sign_request(
+    params,
+    process.env.CLOUDINARY_API_SECRET
+  );
+
+  return res.json({
+    signature: signature,
+    timestamp: timestamp,
+    folder: params.folder,
+  });
+});
+
+// Test route for direct image upload to cloudinary
+userRouter.get("/upload", async (req, res) => {
+  (async function () {
+    cloudinary.config({
+      cloud_name: "dy9bfgpi5",
+    });
+
+    // Upload test image
+    const uploadResult = await cloudinary.uploader
+      .upload("./images/one.jpg")
+      .catch((error) => {
+        console.log(error);
+      });
+
+    console.log(uploadResult);
+  })();
+});
 
 
-userRouter.get('/upload',async(req,res) => {
+// Route to create new task with options
+userRouter.post("/tasks", authMiddleware, async (req, res) => {
  
 
-(async function() {
+  // Usage
+  
+});
 
-    // Configuration
-    cloudinary.config({ 
-        cloud_name: 'dy9bfgpi5', 
-        
-    });
-    
-    // Upload an image
-     const uploadResult = await cloudinary.uploader
-       .upload(
-           './images/one.jpg'
-       )
-       .catch((error) => {
-           console.log(error);
-       });
-    
-    console.log(uploadResult);    
-})();
-})
+// Usage in route handler
+// userRouter.post('/create-task', authMiddleware, async (req, res) => {
+//   try {
+//     const result = await createTaskWithOptions(req.body, req.userId);
+//     res.json(result);
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+//delete all users and tasks
+
+userRouter.delete("/delete", async (req, res) => {
+  try {
+    await User.deleteMany();
+    await Task.deleteMany();
+    await Option.deleteMany();
+    res.json({ msg: "All users and tasks deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete users and tasks" });
+  }
+});
 
 export default userRouter;
