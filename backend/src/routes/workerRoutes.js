@@ -5,6 +5,6 @@ const  workerRouter= express.Router();
 
 workerRouter.post('/signin',signinController);
 workerRouter.post('/tasks',authWorkerMiddleware);
-workerRouter.get('/tasks',nextTaskController);
+workerRouter.get('/tasks',authWorkerMiddleware,nextTaskController);
 
 export default workerRouter;
