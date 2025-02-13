@@ -23,9 +23,11 @@ cloudinary.config({
 // console.log(uploadResult);
 // Generate timestamp and signature
 const timestamp = Math.floor(new Date().getTime() / 1000); // Current timestamp in seconds
+const user_id = '123'
 const params = {
   timestamp: timestamp,
-  folder: 'fiver', // Optional: Organize files into folders
+  folder: `fiver/${user_id}`,
+  public_id: `fiver/${user_id}/image`,
 };
 
 const signature = cloudinary.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET);
