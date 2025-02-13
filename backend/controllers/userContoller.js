@@ -29,7 +29,6 @@ const signinController = async(req,res) => {
 
 const tasksPostController = async(req,res) => {
     const userId = req.userId;
-
     // Validate userId
     // if (!mongoose.Types.ObjectId.isValid(userId)) {
     //     return res.status(400).json({ error: "Invalid user ID" });
@@ -99,7 +98,7 @@ const tasksPostController = async(req,res) => {
             parseData.data.signature,
             parseData.data.options
           );
-    
+          res.status(201).json({ message: `Task created successfully!`, task });
           console.log("Task created:", task);
         } catch (error) {
           console.error("Error creating task:", error);
@@ -173,4 +172,18 @@ const tasksGetController = async (req, res) => {
   }
 };
 
-export {signinController,tasksPostController,tasksGetController};
+const getAllTasks = async (req,res) => {
+  try {
+      const tasks = await Task.find().populate('options');
+      res.json(tasks);
+      console.log(`all Tasks count ${tasks.length}`)
+      
+  } catch (error) {
+    console.log(`Error fetching all tasks ${error}`);
+    return res.status(500).json({
+      success: false,
+      "msg":`Error fetching all tasks ${error}`
+    })
+  }
+}
+export {signinController,tasksPostController,tasksGetController,getAllTasks};
