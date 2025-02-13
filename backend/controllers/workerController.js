@@ -40,16 +40,16 @@ const nextTaskController = async(req,res)=>{
 try {
     // Find first task that's not done and has no submissions from this worker
     // yet to do 
-    // const task = await Task.findOne({
-    //     done: false,
-    //     submissions: {
-    //         $not: {
-    //             $elemMatch: {
-    //                 workerId: workerId
-    //             }
-    //         }
-    //     }
-    // }).populate('options');
+    const task = await Task.findOne({
+        done: true,
+        submissions: {
+            $not: {
+                $elemMatch: {
+                    workerId: workerId
+                }
+            }
+        }
+    }).populate('options');
 
     if (!task) {
         return res.status(404).json({ message: "No available tasks" });
