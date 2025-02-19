@@ -1,0 +1,5 @@
+make get all tasks done by user route
+make worker frontend work 
+fix submission endpoint
+make my slave(v0) refactor whole frontend
+move to web3 😧😧
