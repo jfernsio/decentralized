@@ -5,6 +5,7 @@ import { createTasks } from "../utils/zod.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
+
 const signinController = async(req,res) => {
     // Route for user sign-in with wallet
     // Mock wallet address (TODO: implement actual wallet verification)
@@ -98,7 +99,7 @@ const tasksPostController = async(req,res) => {
             parseData.data.signature,
             parseData.data.options
           );
-          res.status(201).json({ message: `Task created successfully!`, task });
+          res.status(201).json({ message: `Task created successfully!`, task,success:true });
           console.log("Task created:", task);
         } catch (error) {
           console.error("Error creating task:", error);
@@ -147,30 +148,55 @@ const tasksGetController = async (req, res) => {
     ]);
 
     // Combine the data
-    const resultArray = options.map((option) => ({
-      id: option._id,
-      taskId: task._id,
-      taskTitle: task.title,
-      imageUrl: option.image_url,
-      submissionCount: submissions.find((sub) => sub._id.equals(option._id))?.count || 0,
-      createdAt: option.createdAt
-    }));
-    
-    // Performance optimization with Map
     const submissionMap = new Map(
       submissions.map(sub => [sub._id.toString(), sub.count])
     );
-    
-    res.json({
-      success: true,
-      total: resultArray.length,
-      data: resultArray
+
+    const result = {};
+
+    options.forEach((option) => {
+        result[option._id] = {
+            count: submissionMap.get(option._id.toString()) || 0,
+            option: {
+                imageUrl: option.image_url
+            }
+        };
     });
+    
+    // Performance optimization with Map
+    console.log("Submisision Map!",submissionMap);
+    res.json({
+        result,
+        taskDetails: task
+    })
   } catch (error) {
     console.error("Error in tasksGetController:", error);
     res.status(500).json({ error: "Internal server error" });
   }
+ 
 };
+
+
+const getAllTasksByUser = async(req,res) => {
+
+  const userId = req.userId
+
+  if(!userId)  return res.status(401).json({error: "Unauthorized"})
+  
+  try {
+    const tasks = await Task.find({user_id:userId}).populate('options');
+    return res.status(200).json({
+      success: true,
+      tasks})
+  } catch (error) {
+    console.log(`Error fetching all tasks ${error}`);
+    return res.status(500).json({
+      success: false,
+      "msg":`Error fetching all tasks ${error}`
+    })
+  }
+
+}
 
 const getAllTasks = async (req,res) => {
   try {
@@ -186,4 +212,4 @@ const getAllTasks = async (req,res) => {
     })
   }
 }
-export {signinController,tasksPostController,tasksGetController,getAllTasks};
+export {signinController,tasksPostController,tasksGetController,getAllTasksByUser,getAllTasks};
