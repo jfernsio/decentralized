@@ -9,4 +9,8 @@ const createTasks = z.object({
     // amount: z.number()
 })
 
-export { createTasks }
+ const createSubmissionInput = z.object({
+    taskId: z.string(),
+    selection: z.string(),
+})
+export { createTasks ,createSubmissionInput }
