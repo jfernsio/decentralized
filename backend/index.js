@@ -29,12 +29,17 @@ app.post("/submit", authWorkerMiddleware, async (req, res) => {
     const updateOption = await Option.findOneAndUpdate({
       _id: optionId,
       task_id: taskId,
-      done:true
     }, {
       $inc: { submissions: 1 }
-    })
+    });
+    const updateTask = await Task.findOneAndUpdate({
+      _id: taskId,
+    }, {
+     done:true
+    });
+  
 
-    res.json({ success: true, submission, updateOption});
+    res.json({ success: true, submission, updateOption, updateTask });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

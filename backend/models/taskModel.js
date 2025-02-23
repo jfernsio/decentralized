@@ -66,7 +66,10 @@ const taskSchema = new Schema({
   options: [{
     type: Schema.Types.ObjectId,
     ref: 'Option'
-  }]
+  }],
+  submissions: [{ 
+    worker_id: { type: Schema.Types.ObjectId, ref: 'Worker' }
+  }] 
 }, { timestamps: true });
 
 // Option Schema
