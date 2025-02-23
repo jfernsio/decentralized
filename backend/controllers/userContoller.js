@@ -178,7 +178,7 @@ const tasksGetController = async (req, res) => {
 
 
 const getAllTasksByUser = async(req,res) => {
-
+console.log('get task by user')
   const userId = req.userId
 
   if(!userId)  return res.status(401).json({error: "Unauthorized"})
