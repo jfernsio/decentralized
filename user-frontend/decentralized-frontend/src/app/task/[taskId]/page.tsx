@@ -4,22 +4,19 @@
 
 // import { useEffect, useState } from 'react';
 
+import TaskClient from './TaskClient';
+
 
 export default async function getTaskId({params}:{params : {taskId: string}}) {
-    const taskId = await params.taskId;
+    const taskId = (await params).taskId;
     console.log(taskId)
-    return <h4>taskId : {taskId}</h4>
+    return <TaskClient taskId={taskId} />
 }
-async function getTaskDetails(taskId: string) {
-const data = await fetch(`http://localhost:8000/user/tasks?taskId=${taskId}`, {
-    headers: {
-        "Authorization": localStorage.getItem('token')
-    }
-})
-    console.log(data)
-
-    return data.json();
-}
+// async function getTaskDetails(taskId: string) {
+//     const data = await fetch(`http://localhost:8000/user/tasks?taskId=${taskId}`)
+//     console.log(data)
+//     return data.json();
+// }
 
 // export default function Page({params: { 
 //     taskId 
