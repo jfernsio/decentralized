@@ -1,10 +1,48 @@
 "use client";
 import { useState } from "react";
 import { UploadImage } from "./UploadImage";
+import { useRouter } from "next/navigation";
+import toast from 'react-hot-toast';
 
 export const Upload = () => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [images, setImages] = useState<string[]>([]);
+    const [title, setTitle] = useState("");
+    const router = useRouter();
+
+    async function onSubmit () {
+     const res = await fetch('http://localhost:8000/api/user/tasks', {
+    method: 'POST',
+    headers:{
+      'Content-Type': 'application/json',
+      'Authorization': localStorage.getItem('token') || ''
+    },
+    body : JSON.stringify({
+      options: images.map(image => ({
+        imageUrl: image,
+      })),
+      title,
+      signature:"aaaaa1"
+    })
+  })
+  const data = await res.json();
+  console.log(data)
+  try {
+    setIsSubmitted(true);
+    if (data.success) {
+      toast.success("Task submitted successfully");
+      console.log(data.task)
+      await router.push(`/task/${data.task._id}`);
+    } else {
+      toast.error("Error submitting task");
+    }
+  } catch (error) {
+    console.error('Navigation error:', error);
+    toast.error("Error navigating to task page");
+  } finally {
+    setIsSubmitted(false);
+  }
+}
   return (
     <div className="flex justify-center">
       <div className="max-w-screen-lg w-full">
@@ -18,7 +56,7 @@ export const Upload = () => {
 
         <input
           onChange={(e) => {
-            // setTitle(e.target.value);
+            setTitle(e.target.value);
             console.log(e.target.value)
           }}
           type="text"
@@ -44,17 +82,24 @@ export const Upload = () => {
         </div>
 
         <div className="flex justify-center">
-         
-          <button
+        <button  
+
+                onClick={onSubmit}
+                disabled={isSubmitted}
+                className={`${isSubmitted ? 'opacity-50' : 'mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700'}`}
+            >
+                {isSubmitted ? 'Submitting...' : 'Submit Task'}
+            </button>
+          {/* <button
             onClick={() => {
               setIsSubmitted(true);
-              alert("submitted");
+              onSubmit();
             }}
             type="button"
             className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
           >
             {isSubmitted ? "Submit Task" : "Pay 0.1 SOL"}
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
