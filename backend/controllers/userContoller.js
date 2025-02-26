@@ -5,11 +5,13 @@ import { createTasks } from "../utils/zod.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
+export const LAMPORTS_PER_SOL = 1_000_000_000; 
+ // 1 SOL = 1,000,000,000 lamports
 
 const signinController = async(req,res) => {
     // Route for user sign-in with wallet
     // Mock wallet address (TODO: implement actual wallet verification)
-    const walletAddress = "0x1234567890";
+    const walletAddress = "000x1234567890";
   
     // Check if user exists, if not create new user
     const existingUser = await User.findOne({ address: walletAddress });
@@ -56,7 +58,7 @@ const tasksPostController = async(req,res) => {
               title: title,
               user_id: userId,
               signature: signature,
-              amount: 0.1,
+              amount: 0.1*LAMPORTS_PER_SOL,
               options: [], // Initialize empty options array
             },
           ],
