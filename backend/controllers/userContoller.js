@@ -1,7 +1,8 @@
 import { Task, Option, User, Submission } from '../models/taskModel.js';
 import mongoose, { startSession } from "mongoose";
 import { createTasks } from "../utils/zod.js";
-
+import { Keypair, PublicKey } from "@solana/web3.js";
+import nacl from "tweetnacl";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
@@ -11,24 +12,39 @@ export const LAMPORTS_PER_SOL = 1_000_000_000;
 const signinController = async(req,res) => {
     // Route for user sign-in with wallet
     // Mock wallet address (TODO: implement actual wallet verification)
-    const walletAddress = "000x1234567890";
-  
+    const {signatureProp,publicKeyProp} = req.body;
+    const base64signature = signatureProp;
+
+    const decodedSignature = Buffer.from(base64signature,"base64")
+    console.log(decodedSignature)
     // Check if user exists, if not create new user
-    const existingUser = await User.findOne({ address: walletAddress });
-    if (!existingUser) {
-      const newUser = new User({ address: walletAddress });
-      await newUser.save();
-    }
+   const message = new TextEncoder().encode("Sign into mechanical turks");
+   const isVerified = nacl.sign.detached.verify(message,decodedSignature,new PublicKey(publicKeyProp).toBuffer())
+   console.log("Signature Verified:", isVerified);
+
+      try {
+       // Find the user by address (ignore pending_amount and locked_amount)
+let existingUser = await User.findOneAndUpdate(
+  // Find the user by address
+  { address: req.body.publicKeyProp }, 
+  // If user doesn't exist, create a new user with the provided address
+  { $setOnInsert: { address: req.body.publicKeyProp } }, 
+  // Return the updated/new user document and upsert if not found
+  { new: true, upsert: true } 
+);
+console.log(existingUser)
+      const token = jwt.sign(
+        { id: existingUser._id }, // Use worker._id
+        process.env.JWT_PASS,
+        { expiresIn: "7d" } // Optional: Token expiry
+      );
   
-    // Generate JWT token for authentication
-    const token = jwt.sign(
-      {
-        id: existingUser,
-      },
-      process.env.JWT_PASS,
-    );
-    res.json({ token });
-};
+      res.json({ token });
+    } catch (error) {
+      console.error("Signin Error:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+  }
 
 const tasksPostController = async(req,res) => {
     const userId = req.userId;
