@@ -11,13 +11,11 @@ const TOTAL_SUBMISSIONS = 100;
 const signinController = async (req, res) => {
   // Route for user sign-in with wallet
   // Mock wallet address (TODO: implement actual wallet verification)
-  const walletAddress = "00xx1234567899990";
+  const walletAddress = "0x1234567899990";
 
   // Check if user exists, if not create new user
   const existingUser = await Worker.findOne({
     address: walletAddress,
-    pending_amount: 0,
-    locked_amount: 0,
   });
   if (!existingUser) {
     const newUser = new Worker({ address: walletAddress });
@@ -139,8 +137,10 @@ const getBalance = async (req, res) => {
     return res
       .status(200)
       .json({
-        "pending amount": balance.pending_amount,
-        "locked amount": balance.locked_amount,
+       
+          "pending_amount":balance.pending_amount,
+          "locked_amount":balance.locked_amount,
+      
       });
   } catch (e) {
     console.log(e);

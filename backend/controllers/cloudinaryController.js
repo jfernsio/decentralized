@@ -11,7 +11,8 @@ cloudinary.config({
 export const generateSignature = async (req, res) => {
     console.log('Reached cloudinary controller');
     try {
-        const userId = req.userId._id;
+        console.log(req.userId)
+        const userId = req.userId;
 
         if (!userId) {
             return res.status(400).json({ 
