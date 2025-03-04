@@ -15,3 +15,18 @@ export async function fetchDataWithToken(token: string) {
   console.log(data)
   return  data
 }
+
+export async function getNextTask (token:string) {
+  const res = await fetch('http://localhost:8000/api/worker/tasks',{
+    method:'GET',
+    headers:{
+      Authorization:token
+    }
+  })
+  if(!res.ok){
+    throw new Error('Failed to fetch data')
+  }
+  const data = await res.json()
+  console.log(`next task : ${data}`)
+  return data;
+}

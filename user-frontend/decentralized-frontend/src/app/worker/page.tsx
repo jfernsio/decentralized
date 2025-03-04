@@ -1,11 +1,11 @@
 import { AppBar } from "../components/AppBar";
-import { NextTask } from "../components/NextTask";
+import { WorkerFetcher } from "../components/WorkerFetcher";
 
 export default function Worker () {
     return (
         <div>
             <AppBar />
-            <NextTask />
+            <WorkerFetcher />
         </div>
     )
 }

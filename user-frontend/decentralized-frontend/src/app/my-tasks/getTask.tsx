@@ -11,8 +11,8 @@ interface Task {
   amount: number;
   done: boolean;
   options: {
-    imageUrl: string,
-    _id: string
+    imageUrl: string;
+    _id: string;
   }[];
   createdAt: string;
   updatedAt: string;
@@ -41,9 +41,9 @@ export default function GetUserToken() {
       .then((data) => {
         setTaskResponse({
           success: true,
-          tasks: data
+          tasks: data,
         });
-        console.log(taskResponse)
+        console.log(taskResponse);
       })
       .catch((err) => {
         setError(err.message);
@@ -56,9 +56,7 @@ export default function GetUserToken() {
     <div>
       {loading && <div>Loading...</div>}
       {error && <p className="text-red-500">{error}</p>}
-      
-      
-          </div>
-    )
-    }  __
-  
+    </div>
+  );
+}
+

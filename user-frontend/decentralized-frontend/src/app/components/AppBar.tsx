@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AmountPayout } from "./AmountPayout";
+import ConnectWalletButton from "./ConnectWalletButton";
 
 export const AppBar = () => {
     return (
@@ -7,10 +9,14 @@ export const AppBar = () => {
             Turkify
         </div>
         <div className="text-xl pr-4 pb-2">
-           Connect Wallet
+         
+           <ConnectWalletButton />
         </div>
         <div className="text-xl pr-4 pb-2">
             <Link href='/my-tasks'>My-Tasks</Link>
+            </div>
+            <div>
+                <AmountPayout />
             </div>
     </div>
 
