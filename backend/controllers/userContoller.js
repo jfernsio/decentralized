@@ -10,6 +10,7 @@ export const LAMPORTS_PER_SOL = 1_000_000_000;
  // 1 SOL = 1,000,000,000 lamports
 
 const signinController = async(req,res) => {
+  console.log('user singin')
     // Route for user sign-in with wallet
     // Mock wallet address (TODO: implement actual wallet verification)
     const {signatureProp,publicKeyProp} = req.body;
@@ -54,20 +55,20 @@ const tasksPostController = async(req,res) => {
     // }
     const body = req.body;
   
-    // Validate request body using Zod schema
+    /
     const parseData = createTasks.safeParse(body);
     if (!parseData.success)
       return res.status(400).json({ error: parseData.error });
     if (!parseData.data)
       return res.status(411).json({ msg: "you have entered wrong inputs" });
   
-    // Helper function to create task and options in a transaction
+    // function to create task and options in a transaction
     const createTaskWithOptions = async (userId, title, signature, options) => {
       const session = await mongoose.startSession();
       session.startTransaction();
   
       try {
-        // Create task first
+        
         const task = await Task.create(
           [
             {
@@ -75,24 +76,24 @@ const tasksPostController = async(req,res) => {
               user_id: userId,
               signature: signature,
               amount: 0.1*LAMPORTS_PER_SOL,
-              options: [], // Initialize empty options array
+              options: [], 
             },
           ],
           { session }
         );
   
-        // Bulk create options
+       
         const optionsToCreate = options.map((opt) => ({
           image_url: opt.imageUrl,
           task_id: task[0]._id,
-          submissions: 0, // Initialize submission count
+          submissions: 0, 
         }));
   
         const createdOptions = await Option.insertMany(optionsToCreate, {
           session,
         });
   
-        // Update task with option references
+        
         await Task.findByIdAndUpdate(
           task[0]._id,
           { options: createdOptions.map((opt) => opt._id) },
@@ -126,7 +127,7 @@ const tasksPostController = async(req,res) => {
 }
 
 
-// Route to get task details and submission statistics
+// Route to get task details and submission stats
 const tasksGetController = async (req, res) => {
   try {
     const taskId = req.query.taskId;
