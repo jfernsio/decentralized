@@ -8,12 +8,14 @@ import {
 import mongoose, { startSession } from "mongoose";
 import { createTasks, createSubmissionInput } from "../utils/zod.js";
 import { getNextTask } from "../utils/nextTask.js";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey , Transaction,Connection} from "@solana/web3.js";
+import { SystemProgram, sendAndConfirmTransaction } from "@solana/web3.js";
+import  bs58  from "bs58";
 import nacl from "tweetnacl";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-
+const connection = new Connection("https://withered-ancient-sky.solana-devnet.quiknode.pro/98fba2174aa4566f03a74a9c04c7d335a52f52b8/");
 const TOTAL_SUBMISSIONS = 100;
 const TOTAL_DECIMALS = 1_000_000_000;
 const signinController = async (req, res) => {
@@ -205,9 +207,40 @@ const payoutController = async (req, res) => {
     });
   }
 
-  const address = worker.address;
-  const tsxId = "0cwb392323ne";
-  const amountToPayOut = worker.pending_amount;
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({
+        fromPubkey: new PublicKey("9AbMAYTcz7iSDNkDFSxWVzFa7YZuinPX5NsMcYx31BLz"),
+        toPubkey: new PublicKey(worker.address),
+        lamports: 1000_000_000 * worker.pending_amount / TOTAL_DECIMALS,
+    })
+);
+
+
+console.log(worker.address);
+const secretKeyUint8Array = bs58.decode(process.env.PRIVATE_KEY);
+const keypair = Keypair.fromSecretKey(secretKeyUint8Array);
+
+// TODO: There's a double spending problem here
+// The user can request the withdrawal multiple times
+// Can u figure out a way to fix it?
+let signature = "";
+try {
+    signature = await sendAndConfirmTransaction(
+        connection,
+        transaction,
+        [keypair],
+    );
+
+ } catch(e) {
+    return res.json({
+        message: "Transaction failed"
+    })
+ }
+
+ console.log(` View on Solscan: https://solscan.io/tx/${signature}?cluster=devnet`);
+
+
+
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -217,8 +250,8 @@ const payoutController = async (req, res) => {
       { _id: workerId, pending_amount: { $gt: 0 } },
       {
         $inc: {
-          pending_amount: -amountToPayOut,
-          locked_amount: amountToPayOut,
+          pending_amount: -worker.pending_amount,
+          locked_amount: worker.pending_amount,
         },
       },
       {
@@ -236,9 +269,9 @@ const payoutController = async (req, res) => {
       [
         {
           user_id: workerId,
-          amount: amountToPayOut,
-          signature: tsxId,
-          status: "Processing",
+          amount: worker.pending_amount,
+          signature: signature,
+          status: "Success",
           created_at: new Date(),
         },
       ],
@@ -247,8 +280,8 @@ const payoutController = async (req, res) => {
 
     await session.commitTransaction();
     return res.status(201).json({
-      message: "Payout Processing",
-      transactionId: tsxId,
+      message: "Transaction Success!",
+      transactionId: signature,
       pending_amount: updatedWorker.pending_amount,
       locked_amount: updatedWorker.locked_amount,
     });
@@ -265,10 +298,23 @@ const payoutController = async (req, res) => {
   }
 };
 
+const testPayout = async (req,res) => {
+  
+  const workerId = req.userId;
+  try {
+    const worker = await worker.findOne({ _id: workerId });
+    if (!worker) return res.status(404).json({ msg: "worker not found" });
+    return res.status(200).json({ msg : "Payed out!" });
+} catch (error) {
+    console.log(`Error paying user ${error}`);
+    return res.status(500).json({ error: "Error paying out user!" });
+}
+}
 export {
   signinController,
   nextTaskController,
   submitTaskController,
   getBalance,
   payoutController,
+  testPayout
 };
