@@ -192,7 +192,7 @@ const payoutController = async (req, res) => {
 
   if (existingPayout) {
     return res.status(409).json({
-      message: "A payout is already being processed for this account",
+      error: "A payout is already being processed for this account",
       transactionId: existingPayout.signature,
     });
   }
@@ -203,7 +203,7 @@ const payoutController = async (req, res) => {
   // Check if there's any pending amount to pay out
   if (worker.pending_amount <= 0) {
     return res.status(400).json({
-      message: "No pending amount available for payout",
+      error: "No pending amount available for payout",
     });
   }
 
@@ -232,9 +232,11 @@ try {
     );
 
  } catch(e) {
-    return res.json({
-        message: "Transaction failed"
+  console.log(`error : ${e.message}`)
+    return res.status(400).json({
+        error: "Transaction failed"
     })
+   
  }
 
  console.log(` View on Solscan: https://solscan.io/tx/${signature}?cluster=devnet`);

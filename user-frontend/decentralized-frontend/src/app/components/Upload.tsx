@@ -3,12 +3,19 @@ import { useState } from "react";
 import { UploadImage } from "./UploadImage";
 import { useRouter } from "next/navigation";
 import toast from 'react-hot-toast';
+import { PublicKey, SystemProgram, Transaction  } from "@solana/web3.js";
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 
 export const Upload = () => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [images, setImages] = useState<string[]>([]);
     const [title, setTitle] = useState("");
+    const [txSignature, setTxSignature] = useState<string | null>(null);
+    const { publicKey, sendTransaction } = useWallet();
+    const { connection } = useConnection();
     const router = useRouter();
+
+    const receiver = new PublicKey("9AbMAYTcz7iSDNkDFSxWVzFa7YZuinPX5NsMcYx31BLz");
 
     async function onSubmit () {
      const res = await fetch('http://localhost:8000/api/user/tasks', {
@@ -22,7 +29,7 @@ export const Upload = () => {
         imageUrl: image,
       })),
       title,
-      signature:"aaaaa1"
+      signature:txSignature
     })
   })
   const data = await res.json();
@@ -43,6 +50,51 @@ export const Upload = () => {
     setIsSubmitted(false);
   }
 }
+
+const makePayment = async () => {
+  if (!publicKey) {
+    console.error("Wallet not connected!");
+    return;
+  }
+
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: publicKey,
+      toPubkey: new PublicKey("9AbMAYTcz7iSDNkDFSxWVzFa7YZuinPX5NsMcYx31BLz"),
+      lamports: 100_000_000, // 0.1 SOL
+    })
+  );
+
+  try {
+    const {
+      context: { slot: minContextSlot },
+      value: { blockhash, lastValidBlockHeight },
+    } = await connection.getLatestBlockhashAndContext();
+
+    const signature = await sendTransaction(transaction, connection, { minContextSlot });
+
+    console.log(`Signature: ${signature}`);
+
+    // Check confirmation manually
+    let isConfirmed = false;
+    while (!isConfirmed) {
+      const status = await connection.getSignatureStatus(signature, { searchTransactionHistory: true });
+      if (status?.value?.confirmationStatus === "finalized") {
+        isConfirmed = true;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s before retrying
+    }
+
+    console.log("Transaction finalized!");
+    toast.success("Transaction successful!!");
+    setTxSignature(signature);
+  } catch (error) {
+    console.error("Transaction failed:", error);
+    toast.error("Transaction failed");
+  }
+};
+
+
   return (
     <div className="flex justify-center">
       <div className="max-w-screen-lg w-full">
@@ -82,24 +134,23 @@ export const Upload = () => {
         </div>
 
         <div className="flex justify-center">
-        <button  
-
-                onClick={onSubmit}
-                disabled={isSubmitted}
-                className={`${isSubmitted ? 'opacity-50' : 'mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700'}`}
-            >
-                {isSubmitted ? 'Submitting...' : 'Submit Task'}
+        <button onClick={txSignature ? onSubmit : makePayment} type="button" className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+                {txSignature ? "Submit Task" : "Pay 0.1 SOL"}
             </button>
-          {/* <button
-            onClick={() => {
-              setIsSubmitted(true);
-              onSubmit();
-            }}
-            type="button"
-            className="mt-4 text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"
-          >
-            {isSubmitted ? "Submit Task" : "Pay 0.1 SOL"}
-          </button> */}
+          
+         
+
+     
+     
+
+
+
+
+
+
+
+
+
         </div>
       </div>
     </div>
