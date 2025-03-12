@@ -1,9 +1,13 @@
+import TaskClient from "./TaskClient";
 
-import TaskClient from './TaskClient';
+export default async function TaskPage({
+  params,
+}: {
+  params: { taskId: string };
+}) {
+  const { taskId } = params; // No need to await params, it's already available
 
+  console.log("Task ID:", taskId);
 
-export default async function getTaskId({params}:{params : {taskId: string}}) {
-    const taskId = (await params).taskId;
-    console.log(taskId)
-    return <TaskClient taskId={taskId} />
+  return <TaskClient taskId={taskId} />;
 }
