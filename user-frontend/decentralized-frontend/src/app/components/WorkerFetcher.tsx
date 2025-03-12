@@ -1,8 +1,7 @@
 "use client";
-
-import Image from "next/image";
-import { getNextTask } from "../api/actions";
 import { useState, useEffect } from "react";
+import { getNextTask } from "../api/actions";
+import { AmountPayout } from "./AmountPayout";
 
 interface Task {
   title: string;
@@ -13,120 +12,126 @@ interface Task {
     _id: string;
   }[];
 }
+
 function useToken() {
-  const [token, setToken] = useState<string | null>(null);
-  
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+
   useEffect(() => {
-    // Check for token every 1 second
-    const checkTokenInterval = setInterval(() => {
+    const checkToken = () => {
       const storedToken = localStorage.getItem("token");
-      if (storedToken && storedToken !== token) {
+      if (storedToken !== token) {
         setToken(storedToken);
       }
-    }, 5000);
-    
-    return () => clearInterval(checkTokenInterval);
+    };
+
+    checkToken(); // Initial check
+    const interval = setInterval(checkToken, 5000); // Check every 5s
+
+    return () => clearInterval(interval);
   }, [token]);
-  
+
   return token;
 }
+
 export function WorkerFetcher() {
-  // const [token, setToken] = useState<string | null>(null);
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(0);
   const token = useToken();
 
-  useEffect(()=>{
-     // Skip if no token available
-     if (!token) {
-      console.log("Waiting for token...");
+  useEffect(() => {
+    if (!token) {
+      console.log("⏳ Waiting for token...");
       return;
     }
-    
-    console.log("Token available, fetching task...");
+
+    console.log("🔄 Token available, fetching task...");
     setLoading(true);
-    
+
     getNextTask(token)
       .then((data) => {
-        console.log("Fetched task:", data.task);
+        console.log("✅ Fetched task:", data.task);
         const res = data.task;
-        setTask(
-          res && Array.isArray(res.options) ? res : { ...res, options: [] }
-        );
+        setTask(res && Array.isArray(res.options) ? res : { ...res, options: [] });
       })
       .catch((error) => {
-        console.error("Error fetching task:", error);
+        console.error("❌ Error fetching task:", error);
         setTask(null);
       })
       .finally(() => {
+        console.log("✅ Task fetching complete.");
         setLoading(false);
       });
-      
-  }, [token]);
-  
+  }, [token, forceUpdate]);
 
   if (loading) {
     return (
-      <div className="h-screen flex justify-center flex-col">
-        <div className="w-full flex justify-center text-2xl">Loading...</div>
+      <div className="h-screen flex justify-center items-center bg-black">
+        <div className="text-2xl text-gray-400 animate-pulse">Loading...</div>
       </div>
     );
   }
 
   if (!task) {
     return (
-      <div className="h-screen flex justify-center flex-col">
-        <div className="w-full flex justify-center text-2xl">
-          Please check back in some time, there are no pending tasks at the
-          momebt
+      <div className="h-screen flex justify-center items-center bg-black">
+        <div className="text-2xl text-gray-500">
+          No pending tasks at the moment. Check back later.
         </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="text-2xl pt-20 flex justify-center">
+    <div className="min-h-screen bg-black text-white p-6">
+      {/* Task Title */}
+      <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text drop-shadow-lg">
         {task.title}
-        <div className="pl-4">{submitting && "Submitting..."}</div>
-      </div>
-      <div className="flex justify-center pt-8">
-        {task?.options?.map((option) => (
+      </h1>
+
+      {submitting && (
+        <div className="text-center text-lg text-gray-400 pt-2">Submitting...</div>
+      )}
+
+      {/* Task Options */}
+      <div className="flex justify-center flex-wrap gap-6 mt-8">
+        {task.options.map((option) => (
           <Option
             onSelect={async () => {
+              if (!token) return;
               setSubmitting(true);
+
               try {
-                const response = await fetch(
-                  `http://localhost:8000/api/worker/submit`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: token,
-                    },
-                    body: JSON.stringify({
-                      taskId: task._id,
-                      selection: option._id,
-                      signature: task.signature,
-                    }),
-                  }
-                );
-                const data = await response.json();
-                 console.log('response',response)
-                console.log("data",data)
-                const nextTask = data;
-                console.log(nextTask)
-                if (nextTask) {
-                  setTask(nextTask);
-                } else {
-                  setTask(null);
+                const response = await fetch(`http://localhost:8000/api/worker/submit`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: token,
+                  },
+                  body: JSON.stringify({
+                    taskId: task._id,
+                    selection: option._id,
+                    signature: task.signature,
+                  }),
+                });
+
+                if (!response.ok) {
+                  console.error("❌ Error submitting:", response.statusText);
+                  throw new Error("Failed to submit task");
                 }
-                // refresh the user balance in the appbar
+
+                const data = await response.json();
+                console.log("✅ Submission response:", data);
+                <AmountPayout />;
+                setTask(null);
+                setForceUpdate(prev => prev + 1);
               } catch (e) {
-                console.log(e);
+                console.error("❌ Submission error:", e);
+              } finally {
+                setSubmitting(false);
+                setLoading(false);
               }
-              setSubmitting(false);
             }}
             key={option._id}
             imageUrl={option.image_url}
@@ -137,19 +142,16 @@ export function WorkerFetcher() {
   );
 }
 
-function Option({
-  imageUrl,
-  onSelect,
-}: {
-  imageUrl: string;
-  onSelect: () => void;
-}) {
+function Option({ imageUrl, onSelect }: { imageUrl: string; onSelect: () => void }) {
   return (
-    <div>
+    <div
+      className="relative w-80 h-80 cursor-pointer transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50"
+      onClick={onSelect}
+    >
       <img
-        onClick={onSelect}
-        className={"p-2 w-96 rounded-md"}
+        className="w-full h-full object-cover rounded-lg border border-gray-700 shadow-md"
         src={imageUrl}
+        alt="Task option"
       />
     </div>
   );

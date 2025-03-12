@@ -129,7 +129,7 @@ const payoutSchema = new Schema({
   },
   signature: {
     type: String,
-    required: true
+    // required: true
   },
   status: {
     type: String,

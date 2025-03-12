@@ -1,12 +1,17 @@
 import { Task, Option, User, Submission } from '../models/taskModel.js';
 import mongoose, { startSession } from "mongoose";
 import { createTasks } from "../utils/zod.js";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import nacl from "tweetnacl";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 export const LAMPORTS_PER_SOL = 1_000_000_000; 
+
+
+const connection = new Connection("https://solana-devnet.g.alchemy.com/v2/1tKF_pNATYcuDBQ9Gh9AiCBrL6ckiTO1");
+
+const PARENT_WALLET_ADDRESS = "9AbMAYTcz7iSDNkDFSxWVzFa7YZuinPX5NsMcYx31BLz";
  // 1 SOL = 1,000,000,000 lamports
 
 const signinController = async(req,res) => {
@@ -55,13 +60,45 @@ const tasksPostController = async(req,res) => {
     // }
     const body = req.body;
   
-    /
+  //get user addres
+  const userAddress = await User.findOne({_id:userId});
+
+    
     const parseData = createTasks.safeParse(body);
     if (!parseData.success)
       return res.status(400).json({ error: parseData.error });
     if (!parseData.data)
       return res.status(411).json({ msg: "you have entered wrong inputs" });
-  
+    console.log(`parsedData  ${parseData.data}`)
+  const transaction = await connection.getTransaction(parseData.data.signature, {
+      maxSupportedTransactionVersion: 1
+  });
+
+  console.log(transaction);
+  console.log("transcation keys",transaction.transaction.message.getAccountKeys().get(1).toString())
+  console.log(PARENT_WALLET_ADDRESS)
+  if ((transaction?.meta?.postBalances[1] ?? 0) - (transaction?.meta?.preBalances[1] ?? 0) !== 100000000) {
+      return res.status(411).json({
+          message: "Transaction signature/amount incorrect"
+      })
+  }
+
+  if (transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET_ADDRESS) {
+      return res.status(411).json({
+          message: "Transaction sent to wrong address"
+      })
+  }
+
+  if (transaction?.transaction.message.getAccountKeys().get(0)?.toString() !== userAddress?.address) {
+      return res.status(411).json({
+          message: "Transaction sent to wrong address"
+      })
+  }
+  // was this money paid by this user address or a different address?
+
+  // parse the signature here to ensure the person has paid 0.1 SOL
+  // const transaction = Transaction.from(parseData.data.signature); 
+
     // function to create task and options in a transaction
     const createTaskWithOptions = async (userId, title, signature, options) => {
       const session = await mongoose.startSession();

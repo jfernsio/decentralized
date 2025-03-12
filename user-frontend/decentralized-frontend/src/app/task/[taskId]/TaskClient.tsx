@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-// import { fetchTaskDetails } from '@/lib/api';
 
 interface TaskOption {
   count: number;
@@ -29,7 +28,7 @@ export default function TaskClient({ taskId }: { taskId: string }) {
         });
         if (!response.ok) throw new Error('Failed to fetch task');
         const res = await response.json();
-        console.log(res)
+        console.log(res);
         setResult(res.result);
         setTaskDetails(res.taskDetails);
       } catch (err) {
@@ -39,41 +38,64 @@ export default function TaskClient({ taskId }: { taskId: string }) {
     fetchTask();
   }, [taskId]);
 
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!taskDetails.title) return <div>Loading...</div>;
+  if (error) return <div className="text-center text-red-500">{error}</div>;
+  if (!taskDetails.title) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-black text-gray-400 text-2xl">
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">{taskDetails.title}</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-        {Object.keys(result).map((key, index) => (
-          <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-102 hover:shadow-xl">
-            <img 
-              src={result[key].option.imageUrl} 
-              alt="Task Option"
-              className="w-full h-64 object-cover"
-            />
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Option {index + 1}</span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-lg font-bold text-blue-600">{result[key].count}</span>
-                  <span className="text-sm text-gray-500">submissions</span>
-                </div>
-              </div>
-              <div className="mt-3 bg-gray-200 h-2 rounded-full">
-                <div 
-                  className="bg-blue-500 h-2 rounded-full"
-                  style={{ 
-                    width: `${(result[key].count / Math.max(...Object.values(result).map(r => r.count))) * 100}%` 
-                  }}
+    <div className="min-h-screen bg-black text-white p-6">
+      {/* Task Title */}
+      <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text drop-shadow-lg">
+        {taskDetails.title}
+      </h1>
+
+      {/* Task Options Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        {Object.keys(result).map((key, index) => {
+          const maxVotes = Math.max(...Object.values(result).map(r => r.count)) || 1;
+          const votePercentage = (result[key].count / maxVotes) * 100;
+
+          return (
+            <div 
+              key={index} 
+              className="bg-gray-900 rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 hover:shadow-blue-500/50"
+            >
+              {/* Task Option Image */}
+              <div className="w-full h-80 flex items-center justify-center bg-black">
+                <img 
+                  src={result[key].option.imageUrl} 
+                  alt={`Option ${index + 1}`}
+                  className="w-[90%] h-[90%] object-contain rounded-md"
                 />
               </div>
+
+              {/* Option Details */}
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 font-medium">Option {index + 1}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg font-bold text-blue-400">{result[key].count}</span>
+                    <span className="text-sm text-gray-400">submissions</span>
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mt-3 bg-gray-800 h-2 rounded-full">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${votePercentage}%` }}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-   
+    </div>
   );
 }

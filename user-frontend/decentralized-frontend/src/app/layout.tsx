@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import AppWalletProvider from "./components/AppWalletProvider";
+// import AppWalletProvider from "./components/AppWalletProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppWalletProvider>{children}</AppWalletProvider>
+        {/* <AppWalletProvider> */}
+          {children}
+        {/* </AppWalletProvider> */}
         <Toaster position="top-right" />
       </body>
     </html>
