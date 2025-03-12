@@ -37,10 +37,9 @@ export function WorkerFetcher() {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [forceUpdate, setForceUpdate] = useState(0); // This helps trigger a re-render
+  const [forceUpdate, setForceUpdate] = useState(0);
   const token = useToken();
 
-  // Fetch a new task whenever the token changes or a submission occurs
   useEffect(() => {
     if (!token) {
       console.log("⏳ Waiting for token...");
@@ -64,33 +63,39 @@ export function WorkerFetcher() {
         console.log("✅ Task fetching complete.");
         setLoading(false);
       });
-  }, [token, forceUpdate]); // Include `forceUpdate` to re-fetch after submission
+  }, [token, forceUpdate]);
 
   if (loading) {
     return (
-      <div className="h-screen flex justify-center flex-col">
-        <div className="w-full flex justify-center text-2xl">Loading...</div>
+      <div className="h-screen flex justify-center items-center bg-black">
+        <div className="text-2xl text-gray-400 animate-pulse">Loading...</div>
       </div>
     );
   }
 
   if (!task) {
     return (
-      <div className="h-screen flex justify-center flex-col">
-        <div className="w-full flex justify-center text-2xl">
-          No pending tasks at the moment. Please check back later.
+      <div className="h-screen flex justify-center items-center bg-black">
+        <div className="text-2xl text-gray-500">
+          No pending tasks at the moment. Check back later.
         </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="text-2xl pt-20 flex justify-center">
+    <div className="min-h-screen bg-black text-white p-6">
+      {/* Task Title */}
+      <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-blue-400 to-purple-400 text-transparent bg-clip-text drop-shadow-lg">
         {task.title}
-        <div className="pl-4">{submitting && "Submitting..."}</div>
-      </div>
-      <div className="flex justify-center pt-8">
+      </h1>
+
+      {submitting && (
+        <div className="text-center text-lg text-gray-400 pt-2">Submitting...</div>
+      )}
+
+      {/* Task Options */}
+      <div className="flex justify-center flex-wrap gap-6 mt-8">
         {task.options.map((option) => (
           <Option
             onSelect={async () => {
@@ -118,15 +123,14 @@ export function WorkerFetcher() {
 
                 const data = await response.json();
                 console.log("✅ Submission response:", data);
-
-                setTask(null); // Clear current task
-                setForceUpdate(prev => prev + 1); // Trigger re-fetch
+                <AmountPayout />;
+                setTask(null);
+                setForceUpdate(prev => prev + 1);
               } catch (e) {
                 console.error("❌ Submission error:", e);
               } finally {
                 setSubmitting(false);
                 setLoading(false);
-                AmountPayout(); // Ensure loading is reset after submission
               }
             }}
             key={option._id}
@@ -138,18 +142,14 @@ export function WorkerFetcher() {
   );
 }
 
-function Option({
-  imageUrl,
-  onSelect,
-}: {
-  imageUrl: string;
-  onSelect: () => void;
-}) {
+function Option({ imageUrl, onSelect }: { imageUrl: string; onSelect: () => void }) {
   return (
-    <div>
+    <div
+      className="relative w-80 h-80 cursor-pointer transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50"
+      onClick={onSelect}
+    >
       <img
-        onClick={onSelect}
-        className="p-2 w-96 rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+        className="w-full h-full object-cover rounded-lg border border-gray-700 shadow-md"
         src={imageUrl}
         alt="Task option"
       />

@@ -52,11 +52,13 @@ export default function ConnectWalletButton() {
   }, [publicKey, signMessage]);
 
   return (
-    <div className="border hover:border-slate-900 rounded p-4">
+    <div className="border hover:border-slate-900 rounded p-1">
       {publicKey ? (
         <div>
-          <h2>Your Balance is: {balance} SOL</h2>
-          <h1>Your Public Key is: {publicKey.toString()}</h1>
+         <div className="px-3 py-1 bg-blue-500/20 text-blue-400 text-sm font-medium rounded-md shadow-sm border border-green-500/40">
+         Balance : {balance.toFixed(2)} SOL
+</div>
+
           <WalletDisconnectButton />
         </div>
       ) : (
