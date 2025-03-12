@@ -103,7 +103,7 @@ export function WorkerFetcher() {
               setSubmitting(true);
 
               try {
-                const response = await fetch(`NEXT_PUBLIC_API_URLapi/worker/submit`, {
+                const response = await fetch(`process.env.NEXT_PUBLIC_API_URLapi/worker/submit`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
