@@ -17,7 +17,7 @@ const [payingout, setPayingout] = useState(false);
         return;
       }
       try {
-        const balance = await fetch('http://localhost:8000/api/worker/balance', {
+        const balance = await fetch('NEXT_PUBLIC_API_URLapi/worker/balance', {
           method: 'GET',
           headers: {
             Authorization: token
@@ -45,7 +45,7 @@ const [payingout, setPayingout] = useState(false);
     <div className="text-xl pr-8 flex" >
     <button onClick={ async ()  => {
       setPayingout(true);
-     const response = await  fetch('http://localhost:8000/api/worker/payout', {
+     const response = await  fetch('NEXT_PUBLIC_API_URLapi/worker/payout', {
         method: 'POST',
         headers: {
           Authorization: token

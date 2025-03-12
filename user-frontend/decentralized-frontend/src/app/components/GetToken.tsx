@@ -13,7 +13,7 @@ const GetToken: React.FC<GetTokenProps> = ({ publicKeyProp, signatureProp,type }
   console.log(`type in get token ${type}`)
   async function signin() {
     try {
-      const response = await fetch(`http://localhost:8000/api/${type}/signin`, {
+      const response = await fetch(`NEXT_PUBLIC_API_URLapi/${type}/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

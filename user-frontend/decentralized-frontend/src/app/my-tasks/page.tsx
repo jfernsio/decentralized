@@ -26,7 +26,7 @@ export default function Home() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch("http://localhost:8000/api/user/all/tasks/user", {
+        const response = await fetch("NEXT_PUBLIC_API_URLapi/user/all/tasks/user", {
           method: "GET",
           headers: {
             Authorization: localStorage.getItem("token") || "",

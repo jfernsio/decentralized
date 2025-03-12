@@ -13,7 +13,7 @@ export const UploadImage = ({ onImageAdded, image }:{
     try {
       const file = e.target.files[0];
 
-      const response = await fetch("http://localhost:8000/api/get/signature", {
+      const response = await fetch("NEXT_PUBLIC_API_URLapi/get/signature", {
         headers: {
           Authorization: localStorage.getItem("token") || undefined,
         },

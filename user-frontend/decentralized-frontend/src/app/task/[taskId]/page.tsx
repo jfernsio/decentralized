@@ -13,7 +13,7 @@ export default async function getTaskId({params}:{params : {taskId: string}}) {
     return <TaskClient taskId={taskId} />
 }
 // async function getTaskDetails(taskId: string) {
-//     const data = await fetch(`http://localhost:8000/user/tasks?taskId=${taskId}`)
+//     const data = await fetch(`NEXT_PUBLIC_API_URLuser/tasks?taskId=${taskId}`)
 //     console.log(data)
 //     return data.json();
 // }

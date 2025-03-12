@@ -19,7 +19,7 @@ export const Upload = () => {
    //const receiver = new PublicKey("9AbMAYTcz7iSDNkDFSxWVzFa7YZuinPX5NsMcYx31BLz");
 
   async function onSubmit() {
-    const res = await fetch("http://localhost:8000/api/user/tasks", {
+    const res = await fetch("NEXT_PUBLIC_API_URLapi/user/tasks", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

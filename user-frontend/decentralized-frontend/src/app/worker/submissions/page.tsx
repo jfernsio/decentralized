@@ -22,7 +22,7 @@ export default function MySubmissions() {
 
     const fetchSubmissions = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/worker/submissions',{
+        const response = await fetch('NEXT_PUBLIC_API_URLapi/worker/submissions',{
             headers:{
                 "Authorization":localStorage.getItem('token')
             }
