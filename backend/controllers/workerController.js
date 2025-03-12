@@ -312,11 +312,51 @@ const testPayout = async (req,res) => {
     return res.status(500).json({ error: "Error paying out user!" });
 }
 }
+
+const getWorkerSubmissions = async (req, res) => {
+  try {
+    const  workerId  = req.userId;
+    console.log(workerId)
+    if (!workerId) {
+      return res.status(400).json({ error: "Worker ID is required." });
+    }
+
+    // Fetch submissions and populate task title, amount & selected option image
+    const submissions = await Submission.find({ worker_id: workerId })
+      .populate({
+        path: "task_id",
+        select: "title amount", 
+      })
+      .populate({
+        path: "option_id",
+        select: "image_url", 
+      })
+      .select("-worker_id -createdAt -updatedAt"); // Exclude unnecessary fields
+
+    if (!submissions.length) {
+      return res.status(404).json({ message: "No submissions found for this worker." });
+    }
+
+    // Format the response to return only required fields
+    const formattedSubmissions = submissions.map((submission) => ({
+      title: submission.task_id?.title,
+      amount: submission.task_id?.amount,
+      image: submission.option_id?.image_url,
+    }));
+
+    res.json(formattedSubmissions);
+  } catch (error) {
+    console.error("Error fetching worker submissions:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
 export {
   signinController,
   nextTaskController,
   submitTaskController,
   getBalance,
   payoutController,
-  testPayout
+  testPayout,
+  getWorkerSubmissions
 };
