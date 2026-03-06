@@ -15,7 +15,7 @@ import nacl from "tweetnacl";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-const connection = new Connection("https://withered-ancient-sky.solana-devnet.quiknode.pro/98fba2174aa4566f03a74a9c04c7d335a52f52b8/");
+const connection = new Connection(process.env.RPC_URL);
 const TOTAL_SUBMISSIONS = 100;
 const TOTAL_DECIMALS = 1_000_000_000;
 const signinController = async (req, res) => {

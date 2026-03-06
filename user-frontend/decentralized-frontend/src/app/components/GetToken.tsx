@@ -9,11 +9,11 @@ interface GetTokenProps {
 
 const GetToken: React.FC<GetTokenProps> = ({ publicKeyProp, signatureProp,type }) => {
   const hasSignedIn = useRef(false);
- 
+  // console.log(${process.env.NEXT_PUBLIC_API_URL}/)
   console.log(`type in get token ${type}`)
   async function signin() {
     try {
-      const response = await fetch(`process.env.NEXT_PUBLIC_API_URLapi/${type}/signin`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/${type}/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

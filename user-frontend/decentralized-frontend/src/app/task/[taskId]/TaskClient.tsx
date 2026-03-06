@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -21,7 +22,7 @@ export default function TaskClient({ taskId }: { taskId: string }) {
   useEffect(() => {
     const fetchTask = async () => {
       try {
-        const response = await fetch(`process.env.NEXT_PUBLIC_API_URLapi/user/tasks?taskId=${taskId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/tasks?taskId=${taskId}`, {
           headers: {
             "Authorization": localStorage.getItem('token') || ''
           }

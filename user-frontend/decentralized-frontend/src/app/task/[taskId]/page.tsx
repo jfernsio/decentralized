@@ -1,3 +1,4 @@
+//@ts-nocheck
 import TaskClient from "./TaskClient";
 
 export default async function TaskPage({
